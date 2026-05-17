@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/nav_videos"
+        android:icon="@drawable/ic_nav_videos"
+        android:title="Videos" />
+
+    <item
+        android:id="@+id/nav_queue"
+        android:icon="@drawable/ic_nav_queue"
+        android:title="Cola" />
+
+    <item
+        android:id="@+id/nav_player"
+        android:icon="@drawable/ic_nav_player"
+        android:title="Reproductor" />
+
+</menu>
