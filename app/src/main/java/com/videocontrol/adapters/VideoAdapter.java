@@ -42,10 +42,14 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.VideoViewHol
     public void onBindViewHolder(@NonNull VideoViewHolder h, int position) {
         Video video = videos.get(position);
         h.titleText.setText(video.getTitle() != null ? video.getTitle() : "(sin título)");
-        h.categoryText.setText("📁 " + (video.getCategory() != null ? video.getCategory() : "General"));
+
         String ext = video.getExtension() != null ? video.getExtension().toUpperCase() : "";
         String size = video.getFileSizeFormatted() != null ? video.getFileSizeFormatted() : "";
-        h.sizeText.setText(size + (ext.isEmpty() ? "" : "  •  " + ext));
+
+        h.categoryText.setText("📁 " + (video.getCategory() != null ? video.getCategory() : "General") + "  •  " + (ext.isEmpty() ? "" : "" + ext) + "  •  " + size);
+
+        //h.sizeText.setText(size + (ext.isEmpty() ? "" : "  •  " + ext));
+
         h.addButton.setOnClickListener(v -> listener.onAddToQueue(video));
     }
 
@@ -60,7 +64,7 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.VideoViewHol
             super(v);
             titleText    = v.findViewById(R.id.videoTitle);
             categoryText = v.findViewById(R.id.videoCategory);
-            sizeText     = v.findViewById(R.id.videoSize);
+            //sizeText     = v.findViewById(R.id.videoSize);
             addButton    = v.findViewById(R.id.addButton);
         }
     }

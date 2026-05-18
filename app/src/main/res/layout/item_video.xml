@@ -14,7 +14,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="12dp"
+        android:padding="5dp"
         android:gravity="center_vertical">
 
         <TextView
@@ -49,23 +49,23 @@
                 android:textSize="12sp"
                 android:layout_marginTop="2dp" />
 
-            <TextView
+            <!--<TextView
                 android:id="@+id/videoSize"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textColor="#666666"
                 android:textSize="11sp"
-                android:layout_marginTop="1dp" />
+                android:layout_marginTop="1dp" />-->
         </LinearLayout>
 
         <Button
             android:id="@+id/addButton"
-            android:layout_width="wrap_content"
+            android:layout_width="60dp"
             android:layout_height="wrap_content"
-            android:text="+ Cola"
+            android:text="+"
             android:backgroundTint="@color/accent_blue"
             android:textColor="@color/white"
-            android:textSize="11sp"
+            android:textSize="20sp"
             android:paddingHorizontal="10dp" />
 
     </LinearLayout>

@@ -1,3 +1,4 @@
+/*
 package com.videocontrol;
 
 import android.os.Bundle;
@@ -369,6 +370,495 @@ public class MainActivity extends AppCompatActivity {
                 btnPlayPause.setImageResource(
                     isPlaying ? android.R.drawable.ic_media_pause
                               : android.R.drawable.ic_media_play);
+            }
+            @Override public void onFailure(Call<PlayerStatus> c, Throwable t) {
+                playerStateText.setText("Sin conexión con el servidor");
+            }
+        });
+    }
+
+    private void toast(String msg) { Toast.makeText(this, msg, Toast.LENGTH_SHORT).show(); }
+}
+*/
+
+
+
+package com.videocontrol;
+
+import android.os.Bundle;
+import android.os.Handler;
+import android.view.View;
+import android.widget.*;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.videocontrol.adapters.VideoAdapter;
+import com.videocontrol.adapters.QueueAdapter;
+import com.videocontrol.api.ApiClient;
+import com.videocontrol.api.ApiService;
+import com.videocontrol.models.*;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import java.util.List;
+
+public class MainActivity extends AppCompatActivity {
+
+    // Views — Video list
+    private RecyclerView videosRecyclerView;
+    private VideoAdapter videoAdapter;
+    private EditText searchEditText;
+    private Spinner categorySpinner;
+    private ArrayAdapter<String> categoryAdapter;
+
+    // Views — Queue
+    private RecyclerView queueRecyclerView;
+    private QueueAdapter queueAdapter;
+
+    // Views — Player controls
+    private TextView nowPlayingTitle;
+    private TextView playerStateText;
+    private TextView queueCountText;
+    private ImageButton btnPlayPause;
+    private ImageButton btnStop;
+    private ImageButton btnNext;
+    private ImageButton btnFullscreen;
+    private SeekBar volumeSeekBar;
+
+    // Layout panels
+    private View panelVideos;
+    private View panelQueue;
+    private View panelPlayer;
+
+    private ApiService api;
+    private final Handler handler = new Handler();
+    private boolean isPlaying = false;
+
+    // ── Control de reproducción continua ────────────────────────────────────────
+    // Cuando true, el poller avanzará al siguiente video al detectar que el
+    // reproductor quedó inactivo pero aún hay items en la cola.
+    private boolean autoPlayEnabled = false;
+    // Evita que se llame a playNext() varias veces seguidas mientras la API responde
+    private boolean awaitingNextPlay = false;
+
+    // ── Polling de estado (cada 3 s) ─────────────────────────────────────────────
+    private final Runnable statusPoll = new Runnable() {
+        @Override public void run() {
+            refreshStatus();
+            handler.postDelayed(this, 3000);
+        }
+    };
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        api = ApiClient.getClient().create(ApiService.class);
+
+        setupToolbar();
+        setupVideoPanel();
+        setupQueuePanel();
+        setupPlayerControls();
+        setupBottomNav();
+
+        loadVideos();
+        loadCategories();
+        showPanel(panelVideos);
+    }
+
+    @Override protected void onResume() { super.onResume(); handler.post(statusPoll); }
+    @Override protected void onPause()  { super.onPause();  handler.removeCallbacks(statusPoll); }
+
+    // ── Toolbar ──────────────────────────────────────────────────────────────────
+    private void setupToolbar() {
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setTitle("🎬 Video Control");
+    }
+
+    // ── Panel Videos ─────────────────────────────────────────────────────────────
+    private void setupVideoPanel() {
+        panelVideos = findViewById(R.id.panelVideos);
+
+        videosRecyclerView = findViewById(R.id.videosRecyclerView);
+        videosRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        videoAdapter = new VideoAdapter(this::addToQueue);
+        videosRecyclerView.setAdapter(videoAdapter);
+
+        searchEditText = findViewById(R.id.searchEditText);
+        Button searchBtn = findViewById(R.id.searchButton);
+        searchBtn.setOnClickListener(v -> searchVideos());
+
+        categorySpinner = findViewById(R.id.categorySpinner);
+        categoryAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item);
+        categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        categorySpinner.setAdapter(categoryAdapter);
+        categorySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override public void onItemSelected(AdapterView<?> p, View v, int pos, long id) {
+                String sel = categoryAdapter.getItem(pos);
+                if (sel != null && !sel.equals("Todos los géneros")) loadByCategory(sel);
+                else loadVideos();
+            }
+            @Override public void onNothingSelected(AdapterView<?> p) {}
+        });
+
+        Button scanBtn = findViewById(R.id.scanButton);
+        scanBtn.setOnClickListener(v -> scanVideos());
+    }
+
+    // ── Panel Cola ────────────────────────────────────────────────────────────────
+    private void setupQueuePanel() {
+        panelQueue = findViewById(R.id.panelQueue);
+
+        queueRecyclerView = findViewById(R.id.queueRecyclerView);
+        queueRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        queueAdapter = new QueueAdapter(this::removeFromQueue);
+        queueRecyclerView.setAdapter(queueAdapter);
+
+        Button clearBtn = findViewById(R.id.clearQueueButton);
+        clearBtn.setOnClickListener(v -> clearQueue());
+
+        // "Reproducir Cola" — inicia la reproducción continua desde el primer item
+        Button playQueueBtn = findViewById(R.id.playQueueButton);
+        playQueueBtn.setOnClickListener(v -> startAutoPlay());
+
+        // "Siguiente" — avanza manualmente sin detener el modo auto-play
+        Button playNextBtn = findViewById(R.id.playNextButton);
+        playNextBtn.setOnClickListener(v -> playNext());
+    }
+
+    // ── Panel Reproductor ─────────────────────────────────────────────────────────
+    private void setupPlayerControls() {
+        panelPlayer = findViewById(R.id.panelPlayer);
+
+        nowPlayingTitle = findViewById(R.id.nowPlayingTitle);
+        playerStateText = findViewById(R.id.playerStateText);
+        queueCountText  = findViewById(R.id.queueCountText);
+
+        btnPlayPause  = findViewById(R.id.btnPlayPause);
+        btnStop       = findViewById(R.id.btnStop);
+        btnNext       = findViewById(R.id.btnNext);
+        btnFullscreen = findViewById(R.id.btnFullscreen);
+        volumeSeekBar = findViewById(R.id.volumeSeekBar);
+
+        btnPlayPause.setOnClickListener(v -> togglePause());
+        btnStop.setOnClickListener(v -> stopPlayer());
+        // El botón ⏭ en el reproductor también respeta el modo auto-play
+        btnNext.setOnClickListener(v -> nextVideo());
+        btnFullscreen.setOnClickListener(v -> toggleFullscreen());
+
+        volumeSeekBar.setMax(200);
+        volumeSeekBar.setProgress(100);
+        volumeSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override public void onProgressChanged(SeekBar s, int p, boolean user) {
+                if (user) setVolume(p);
+            }
+            @Override public void onStartTrackingTouch(SeekBar s) {}
+            @Override public void onStopTrackingTouch(SeekBar s) {}
+        });
+    }
+
+    // ── Bottom Navigation ──────────────────────────────────────────────────────────
+    private void setupBottomNav() {
+        BottomNavigationView nav = findViewById(R.id.bottomNav);
+        nav.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.nav_videos) { showPanel(panelVideos); return true; }
+            if (id == R.id.nav_queue)  { showPanel(panelQueue); loadQueue(); return true; }
+            if (id == R.id.nav_player) { showPanel(panelPlayer); refreshStatus(); return true; }
+            return false;
+        });
+    }
+
+    private void showPanel(View panel) {
+        panelVideos.setVisibility(View.GONE);
+        panelQueue.setVisibility(View.GONE);
+        panelPlayer.setVisibility(View.GONE);
+        panel.setVisibility(View.VISIBLE);
+    }
+
+    // ── Carga de videos ───────────────────────────────────────────────────────────
+    private void loadVideos() {
+        api.getAllVideos().enqueue(new Callback<List<Video>>() {
+            @Override public void onResponse(Call<List<Video>> c, Response<List<Video>> r) {
+                if (r.isSuccessful() && r.body() != null) {
+                    videoAdapter.setVideos(r.body());
+                    if (r.body().isEmpty()) toast("El servidor no tiene videos escaneados");
+                } else {
+                    toast("Error HTTP " + r.code());
+                }
+            }
+            @Override public void onFailure(Call<List<Video>> c, Throwable t) {
+                toast("Error: " + t.getClass().getSimpleName() + " - " + t.getMessage());
+            }
+        });
+    }
+
+    private void loadCategories() {
+        api.getCategories().enqueue(new Callback<List<String>>() {
+            @Override public void onResponse(Call<List<String>> c, Response<List<String>> r) {
+                if (r.isSuccessful() && r.body() != null) {
+                    categoryAdapter.clear();
+                    categoryAdapter.add("Todos los géneros");
+                    categoryAdapter.addAll(r.body());
+                }
+            }
+            @Override public void onFailure(Call<List<String>> c, Throwable t) {}
+        });
+    }
+
+    private void searchVideos() {
+        String q = searchEditText.getText().toString().trim();
+        if (q.isEmpty()) { loadVideos(); return; }
+        api.searchVideos(q).enqueue(new Callback<List<Video>>() {
+            @Override public void onResponse(Call<List<Video>> c, Response<List<Video>> r) {
+                if (r.isSuccessful() && r.body() != null) {
+                    videoAdapter.setVideos(r.body());
+                    if (r.body().isEmpty()) toast("Sin resultados para: " + q);
+                }
+            }
+            @Override public void onFailure(Call<List<Video>> c, Throwable t) { toast("Error en búsqueda"); }
+        });
+    }
+
+    private void loadByCategory(String cat) {
+        api.getByCategory(cat).enqueue(new Callback<List<Video>>() {
+            @Override public void onResponse(Call<List<Video>> c, Response<List<Video>> r) {
+                if (r.isSuccessful() && r.body() != null) videoAdapter.setVideos(r.body());
+            }
+            @Override public void onFailure(Call<List<Video>> c, Throwable t) {}
+        });
+    }
+
+    private void scanVideos() {
+        api.scanVideos().enqueue(new Callback<Void>() {
+            @Override public void onResponse(Call<Void> c, Response<Void> r) {
+                if (r.isSuccessful()) {
+                    toast("📂 Escaneo completado");
+                    loadVideos();
+                    loadCategories();
+                } else {
+                    toast("Scan HTTP " + r.code());
+                }
+            }
+            @Override public void onFailure(Call<Void> c, Throwable t) {
+                toast("Scan error: " + t.getClass().getSimpleName() + " - " + t.getMessage());
+            }
+        });
+    }
+
+    // ── Cola ───────────────────────────────────────────────────────────────────────
+
+    /**
+     * Agrega un video a la cola. Si el modo auto-play está activo y el reproductor
+     * estaba inactivo (cola vacía), arranca la reproducción de inmediato.
+     */
+    private void addToQueue(Video video) {
+        ApiService.AddToQueueDto dto = new ApiService.AddToQueueDto(video.getId(), "Android");
+        api.addToQueue(dto).enqueue(new Callback<Void>() {
+            @Override public void onResponse(Call<Void> c, Response<Void> r) {
+                if (r.isSuccessful()) {
+                    toast("🎬 " + video.getTitle() + " agregado a la cola");
+                    // Si auto-play está ON y el player estaba parado, arranca el nuevo item
+                    if (autoPlayEnabled && !isPlaying && !awaitingNextPlay) {
+                        playNext();
+                    }
+                } else if (r.code() == 400) {
+                    toast("⚠️ Ya está en la cola");
+                } else {
+                    toast("Error al agregar");
+                }
+            }
+            @Override public void onFailure(Call<Void> c, Throwable t) { toast("Sin conexión"); }
+        });
+    }
+
+    private void loadQueue() {
+        api.getQueue().enqueue(new Callback<List<QueueItem>>() {
+            @Override public void onResponse(Call<List<QueueItem>> c, Response<List<QueueItem>> r) {
+                if (r.isSuccessful() && r.body() != null) {
+                    queueAdapter.setQueue(r.body());
+                    // Desplaza al primer item de la cola (prioridad más alta / índice 0)
+                    if (!r.body().isEmpty()) {
+                        queueRecyclerView.scrollToPosition(0);
+                    }
+                }
+            }
+            @Override public void onFailure(Call<List<QueueItem>> c, Throwable t) { toast("Error cargando cola"); }
+        });
+    }
+
+    private void removeFromQueue(QueueItem item) {
+        api.removeFromQueue(item.getId()).enqueue(new Callback<Void>() {
+            @Override public void onResponse(Call<Void> c, Response<Void> r) {
+                if (r.isSuccessful()) { toast("Eliminado"); loadQueue(); }
+            }
+            @Override public void onFailure(Call<Void> c, Throwable t) { toast("Error"); }
+        });
+    }
+
+    private void clearQueue() {
+        api.clearQueue().enqueue(new Callback<Void>() {
+            @Override public void onResponse(Call<Void> c, Response<Void> r) {
+                if (r.isSuccessful()) {
+                    autoPlayEnabled = false;    // detiene el auto-play al limpiar
+                    awaitingNextPlay = false;
+                    toast("🗑️ Lista limpia");
+                    loadQueue();
+                }
+            }
+            @Override public void onFailure(Call<Void> c, Throwable t) { toast("Error"); }
+        });
+    }
+
+    // ── Reproducción continua ──────────────────────────────────────────────────────
+
+    /**
+     * Activa el modo auto-play y lanza el primer video de la cola.
+     * El poller de estado se encargará de llamar a playNext() cuando cada
+     * video termine, hasta que la cola quede vacía.
+     */
+    private void startAutoPlay() {
+        autoPlayEnabled = true;
+        awaitingNextPlay = false;
+        toast("▶ Iniciando reproducción continua…");
+        playNext();
+        nextVideo();
+    }
+
+    /**
+     * Solicita al servidor que reproduzca el siguiente item de la cola.
+     * Actualiza la lista y hace scroll para mostrar el item actual arriba.
+     */
+    private void playNext() {
+        awaitingNextPlay = true;
+        api.playNext().enqueue(new Callback<Video>() {
+            @Override public void onResponse(Call<Video> c, Response<Video> r) {
+                awaitingNextPlay = false;
+                if (r.isSuccessful() && r.body() != null) {
+                    isPlaying = true;
+                    toast("▶ Reproduciendo: " + r.body().getTitle());
+                    loadQueue();        // refresca y hace scroll a posición 0
+                    refreshStatus();
+                } else {
+                    // Cola vacía — fin de la reproducción continua
+                    isPlaying = false;
+                    autoPlayEnabled = false;
+                    toast("✅ Lista finalizada");
+                    loadQueue();
+                    refreshStatus();
+                }
+            }
+            @Override public void onFailure(Call<Video> c, Throwable t) {
+                awaitingNextPlay = false;
+                toast("Error al avanzar");
+            }
+        });
+    }
+
+    // ── Controles reproductor ──────────────────────────────────────────────────────
+    private void togglePause() {
+        api.pause().enqueue(new Callback<Void>() {
+            @Override public void onResponse(Call<Void> c, Response<Void> r) { refreshStatus(); }
+            @Override public void onFailure(Call<Void> c, Throwable t) { toast("Error al pausar"); }
+        });
+    }
+
+    /**
+     * Detener implica cancelar también el auto-play para no arrancar
+     * el siguiente video automáticamente.
+     */
+    private void stopPlayer() {
+        autoPlayEnabled = false;
+        awaitingNextPlay = false;
+        api.stop().enqueue(new Callback<Void>() {
+            @Override public void onResponse(Call<Void> c, Response<Void> r) {
+                toast("⏹ Detenido");
+                refreshStatus();
+            }
+            @Override public void onFailure(Call<Void> c, Throwable t) { toast("Error al detener"); }
+        });
+    }
+
+    /**
+     * Avance manual con el botón ⏭.
+     * Si auto-play está activo llama a playNext() (que también recarga la cola).
+     * Si no, sólo envía el comando next al servidor.
+     */
+    private void nextVideo() {
+        if (autoPlayEnabled) {
+            playNext();
+        } else {
+            api.next().enqueue(new Callback<Void>() {
+                @Override public void onResponse(Call<Void> c, Response<Void> r) {
+                    toast("⏭ Siguiente video");
+                    loadQueue();
+                    refreshStatus();
+                }
+                @Override public void onFailure(Call<Void> c, Throwable t) { toast("Error"); }
+            });
+        }
+    }
+
+    private void setVolume(int value) {
+        api.setVolume(value).enqueue(new Callback<Void>() {
+            @Override public void onResponse(Call<Void> c, Response<Void> r) {}
+            @Override public void onFailure(Call<Void> c, Throwable t) {}
+        });
+    }
+
+    private void toggleFullscreen() {
+        api.toggleFullscreen().enqueue(new Callback<Void>() {
+            @Override public void onResponse(Call<Void> c, Response<Void> r) { toast("🖥 Pantalla completa"); }
+            @Override public void onFailure(Call<Void> c, Throwable t) { toast("Error"); }
+        });
+    }
+
+    // ── Polling de estado ──────────────────────────────────────────────────────────
+
+    /**
+     * Refresca estado del reproductor. Si auto-play está activo y el servidor
+     * reporta que ya no está reproduciendo (video terminó) y aún hay items en
+     * la cola, dispara automáticamente el siguiente.
+     */
+    private void refreshStatus() {
+        api.getStatus().enqueue(new Callback<PlayerStatus>() {
+            @Override public void onResponse(Call<PlayerStatus> c, Response<PlayerStatus> r) {
+                if (!r.isSuccessful() || r.body() == null) return;
+                PlayerStatus s = r.body();
+                boolean wasPlaying = isPlaying;
+                isPlaying = s.isPlaying();
+
+                String title = s.getCurrentVideo() != null
+                        ? s.getCurrentVideo().getTitle()
+                        : "Ningún video";
+                nowPlayingTitle.setText(title);
+                playerStateText.setText(s.getMessage());
+                queueCountText.setText("En cola: " + s.getQueueCount() + " video(s)");
+
+                btnPlayPause.setImageResource(
+                        isPlaying ? android.R.drawable.ic_media_pause
+                                : android.R.drawable.ic_media_play);
+
+                // ── Lógica de reproducción continua ─────────────────────────────
+                // Si el video anterior terminó (wasPlaying → !isPlaying),
+                // auto-play está ON, no hay una solicitud en vuelo y aún hay cola:
+                // avanzamos al siguiente automáticamente.
+                if (autoPlayEnabled
+                        && wasPlaying
+                        && !isPlaying
+                        && !awaitingNextPlay
+                        && s.getQueueCount() > 0) {
+                    playNext();
+                }
+
+                // Si la cola se agotó, desactivamos auto-play
+                if (autoPlayEnabled && !isPlaying && s.getQueueCount() == 0) {
+                    autoPlayEnabled = false;
+                }
             }
             @Override public void onFailure(Call<PlayerStatus> c, Throwable t) {
                 playerStateText.setText("Sin conexión con el servidor");
