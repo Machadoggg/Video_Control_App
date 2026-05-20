@@ -177,15 +177,15 @@
         android:visibility="gone">
 
         <!-- Ícono pantalla -->
-        <TextView
+        <!--<TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="🖥"
-            android:textSize="64sp"
-            android:layout_marginBottom="8dp" />
+            android:textSize="40sp"
+            android:layout_marginBottom="8dp" />-->
 
         <!-- Video actual -->
-        <TextView
+        <!--<TextView
             android:id="@+id/nowPlayingTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -214,10 +214,10 @@
             android:textColor="@color/accent_blue"
             android:textSize="13sp"
             android:gravity="center"
-            android:layout_marginBottom="24dp" />
+            android:layout_marginBottom="24dp" />-->
 
         <!-- Controles -->
-        <LinearLayout
+        <!--<LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
@@ -259,10 +259,10 @@
                 android:background="@color/card_dark"
                 android:tint="#FFCC00"
                 android:layout_marginHorizontal="8dp" />
-        </LinearLayout>
+        </LinearLayout>-->
 
         <!-- Volumen -->
-        <TextView
+       <!-- <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="🔊  Volumen"
@@ -277,9 +277,16 @@
             android:max="200"
             android:progress="100"
             android:thumbTint="@color/accent_blue"
-            android:progressTint="@color/accent_blue" />
+            android:progressTint="@color/accent_blue" />-->
 
     </LinearLayout>
+
+    <include
+        android:id="@+id/panelPlayer"
+        layout="@layout/fragment_player"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"/>
 
     <!-- Bottom Navigation -->
     <com.google.android.material.bottomnavigation.BottomNavigationView

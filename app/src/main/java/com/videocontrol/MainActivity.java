@@ -388,6 +388,7 @@ package com.videocontrol;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -426,6 +427,8 @@ public class MainActivity extends AppCompatActivity {
     private ImageButton btnNext;
     private ImageButton btnFullscreen;
     private SeekBar volumeSeekBar;
+
+    private PlayerPanelController playerPanelController;
 
     // Layout panels
     private View panelVideos;
@@ -467,6 +470,14 @@ public class MainActivity extends AppCompatActivity {
         loadVideos();
         loadCategories();
         showPanel(panelVideos);
+
+        // En onCreate(), después de inflar panelPlayer:
+        PlayerPanelController playerPanelController = new PlayerPanelController(
+                panelPlayer,
+                api,
+                () -> playNext()   // callback para el botón "Siguiente"
+        );
+
     }
 
     @Override protected void onResume() { super.onResume(); handler.post(statusPoll); }
@@ -531,7 +542,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // ── Panel Reproductor ─────────────────────────────────────────────────────────
-    private void setupPlayerControls() {
+    /*private void setupPlayerControls() {
         panelPlayer = findViewById(R.id.panelPlayer);
 
         nowPlayingTitle = findViewById(R.id.nowPlayingTitle);
@@ -559,6 +570,28 @@ public class MainActivity extends AppCompatActivity {
             @Override public void onStartTrackingTouch(SeekBar s) {}
             @Override public void onStopTrackingTouch(SeekBar s) {}
         });
+    }*/
+    /*private void setupPlayerControls() {
+        panelPlayer = findViewById(R.id.panelPlayer);
+        playerPanelController = new PlayerPanelController(
+                panelPlayer,
+                api,
+                () -> playNext()
+        );
+    }*/
+    /*private void setupPlayerControls() {
+        // Si panelPlayer es un ViewGroup contenedor (FrameLayout, etc.)
+        View playerView = getLayoutInflater().inflate(R.layout.fragment_player,
+                (ViewGroup) findViewById(R.id.panelPlayer), true);
+        panelPlayer = playerView;
+        playerPanelController = new PlayerPanelController(playerView, api, () -> playNext());
+    }*/
+    private void setupPlayerControls() {
+        ViewGroup container = findViewById(R.id.panelPlayer);
+        View playerView = getLayoutInflater().inflate(R.layout.fragment_player, container, false);
+        container.addView(playerView);
+        panelPlayer = container;
+        playerPanelController = new PlayerPanelController(playerView, api, () -> playNext());
     }
 
     // ── Bottom Navigation ──────────────────────────────────────────────────────────
@@ -824,12 +857,14 @@ public class MainActivity extends AppCompatActivity {
      * reporta que ya no está reproduciendo (video terminó) y aún hay items en
      * la cola, dispara automáticamente el siguiente.
      */
-    private void refreshStatus() {
+    /*private void refreshStatus() {
         api.getStatus().enqueue(new Callback<PlayerStatus>() {
             @Override public void onResponse(Call<PlayerStatus> c, Response<PlayerStatus> r) {
                 if (!r.isSuccessful() || r.body() == null) return;
                 PlayerStatus s = r.body();
-                boolean wasPlaying = isPlaying;
+                playerPanelController.updateStatus(s);
+
+                *//*boolean wasPlaying = isPlaying;
                 isPlaying = s.isPlaying();
 
                 String title = s.getCurrentVideo() != null
@@ -841,13 +876,13 @@ public class MainActivity extends AppCompatActivity {
 
                 btnPlayPause.setImageResource(
                         isPlaying ? android.R.drawable.ic_media_pause
-                                : android.R.drawable.ic_media_play);
+                                : android.R.drawable.ic_media_play);*//*
 
                 // ── Lógica de reproducción continua ─────────────────────────────
                 // Si el video anterior terminó (wasPlaying → !isPlaying),
                 // auto-play está ON, no hay una solicitud en vuelo y aún hay cola:
                 // avanzamos al siguiente automáticamente.
-                if (autoPlayEnabled
+                *//*if (autoPlayEnabled
                         && wasPlaying
                         && !isPlaying
                         && !awaitingNextPlay
@@ -858,10 +893,40 @@ public class MainActivity extends AppCompatActivity {
                 // Si la cola se agotó, desactivamos auto-play
                 if (autoPlayEnabled && !isPlaying && s.getQueueCount() == 0) {
                     autoPlayEnabled = false;
-                }
+                }*//*
+
+
+
+
             }
             @Override public void onFailure(Call<PlayerStatus> c, Throwable t) {
                 playerStateText.setText("Sin conexión con el servidor");
+            }
+        });
+    }*/
+    private void refreshStatus() {
+        api.getStatus().enqueue(new Callback<PlayerStatus>() {
+            @Override public void onResponse(Call<PlayerStatus> c, Response<PlayerStatus> r) {
+                if (!r.isSuccessful() || r.body() == null) return;
+                PlayerStatus s = r.body();
+
+                // Actualiza toda la UI del reproductor
+                playerPanelController.updateStatus(s);
+
+                // Lógica de auto-play (vive en MainActivity, no en el controlador)
+                boolean wasPlaying = isPlaying;
+                isPlaying = s.isPlaying;
+
+                if (autoPlayEnabled && wasPlaying && !isPlaying
+                        && !awaitingNextPlay && s.queueCount > 0) {
+                    playNext();
+                }
+                if (autoPlayEnabled && !isPlaying && s.queueCount == 0) {
+                    autoPlayEnabled = false;
+                }
+            }
+            @Override public void onFailure(Call<PlayerStatus> c, Throwable t) {
+                // sin conexión — no hay playerStateText directo, el panel lo maneja
             }
         });
     }
