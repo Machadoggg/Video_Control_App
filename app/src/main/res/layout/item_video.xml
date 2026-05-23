@@ -60,9 +60,18 @@
         </LinearLayout>
 
         <Button
-            android:id="@+id/addButton"
-            android:layout_width="60dp"
+            android:id="@+id/addNextButton"
+            android:layout_width="40dp"
             android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:text="▶"
+            android:textSize="20sp" />
+
+        <Button
+            android:id="@+id/addButton"
+            android:layout_width="40dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
             android:text="+"
             android:backgroundTint="@color/accent_blue"
             android:textColor="@color/white"

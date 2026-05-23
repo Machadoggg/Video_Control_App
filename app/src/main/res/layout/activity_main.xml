@@ -126,21 +126,30 @@
             <Button
                 android:id="@+id/playNextButton"
                 android:layout_width="0dp"
-                android:layout_marginStart="8dp"
+                android:layout_marginStart="4dp"
                 android:textSize="20dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="▶▶|"
+                android:text="▶|"
                 android:backgroundTint="@color/accent_green"
                 android:textColor="@color/white" />
 
+            <Button
+                android:id="@+id/shuffleButton"
+                android:layout_width="wrap_content"
+                android:layout_marginStart="4dp"
+                android:layout_height="wrap_content"
+                android:text="▶ 🔀"
+                android:textSize="20dp"
+                android:backgroundTint="@color/accent_green"
+                android:textColor="@color/white" /> />
 
             <Button
                 android:id="@+id/clearQueueButton"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_marginStart="8dp"
+                android:layout_marginStart="4dp"
                 android:textSize="20dp"
                 android:text="🗑️"
                 android:backgroundTint="@color/accent_red"
