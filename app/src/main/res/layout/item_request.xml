@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:background="@color/card_dark"
+    android:padding="12dp"
+    android:layout_marginHorizontal="8dp"
+    android:layout_marginVertical="4dp">
+
+    <!-- Ícono de nota musical -->
+    <TextView
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:text="🎵"
+        android:textSize="20sp"
+        android:gravity="center"
+        android:layout_gravity="center_vertical"
+        android:layout_marginEnd="10dp" />
+
+    <!-- Info de la solicitud -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/reqSongTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/white"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:maxLines="2"
+            android:ellipsize="end" />
+
+        <TextView
+            android:id="@+id/reqArtistName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#AAAAAA"
+            android:textSize="12sp"
+            android:layout_marginTop="2dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="4dp">
+
+            <TextView
+                android:id="@+id/reqTableName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="@color/accent_blue"
+                android:textSize="11sp" />
+
+            <TextView
+                android:id="@+id/reqTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#666666"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- Botones de acción -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_gravity="center_vertical"
+        android:layout_marginStart="8dp">
+
+        <!-- ✅ Marcar como reproducida -->
+        <ImageButton
+            android:id="@+id/reqMarkPlayedBtn"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@android:drawable/checkbox_on_background"
+            android:background="@color/accent_green"
+            android:tint="@android:color/white"
+            android:layout_marginEnd="6dp"
+            android:contentDescription="Marcar como reproducida" />
+
+        <!-- 🗑️ Eliminar -->
+        <ImageButton
+            android:id="@+id/reqDeleteBtn"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@android:drawable/ic_delete"
+            android:background="@color/accent_red"
+            android:tint="@android:color/white"
+            android:contentDescription="Eliminar solicitud" />
+
+    </LinearLayout>
+
+</LinearLayout>
