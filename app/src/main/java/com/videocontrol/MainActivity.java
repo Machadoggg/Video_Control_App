@@ -1,5 +1,6 @@
 package com.videocontrol;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
@@ -9,6 +10,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.badge.BadgeDrawable;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.videocontrol.adapters.VideoAdapter;
 import com.videocontrol.adapters.QueueAdapter;
@@ -483,7 +486,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // ── Solicitudes de canciones ───────────────────────────────────────────────
-    private void loadRequests() {
+    /*private void loadRequests() {
         api.getPendingRequests().enqueue(new Callback<List<SongRequest>>() {
             @Override public void onResponse(Call<List<SongRequest>> c, Response<List<SongRequest>> r) {
                 if (r.isSuccessful() && r.body() != null) {
@@ -495,9 +498,24 @@ public class MainActivity extends AppCompatActivity {
                 toast("Error cargando solicitudes");
             }
         });
+    }*/
+    private void loadRequests() {
+        api.getAllRequests().enqueue(new Callback<List<SongRequest>>() {
+            @Override public void onResponse(Call<List<SongRequest>> c, Response<List<SongRequest>> r) {
+                if (r.isSuccessful() && r.body() != null) {
+                    requestsAdapter.setRequests(r.body());
+                    updateBadge((int) r.body().stream()
+                            .filter(req -> !req.isPlayed())
+                            .count());
+                }
+            }
+            @Override public void onFailure(Call<List<SongRequest>> c, Throwable t) {
+                toast("Error cargando solicitudes");
+            }
+        });
     }
 
-    private void refreshRequestsBadge() {
+    /*private void refreshRequestsBadge() {
         api.getPendingRequests().enqueue(new Callback<List<SongRequest>>() {
             @Override public void onResponse(Call<List<SongRequest>> c, Response<List<SongRequest>> r) {
                 if (r.isSuccessful() && r.body() != null) {
@@ -506,9 +524,23 @@ public class MainActivity extends AppCompatActivity {
             }
             @Override public void onFailure(Call<List<SongRequest>> c, Throwable t) {}
         });
+    }*/
+    private void refreshRequestsBadge() {
+        api.getAllRequests().enqueue(new Callback<List<SongRequest>>() {
+            @Override public void onResponse(Call<List<SongRequest>> c, Response<List<SongRequest>> r) {
+                if (r.isSuccessful() && r.body() != null) {
+                    int pending = (int) r.body().stream()
+                            .filter(req -> !req.isPlayed())
+                            .count();
+                    updateBadge(pending);
+                }
+            }
+            @Override public void onFailure(Call<List<SongRequest>> c, Throwable t) {}
+        });
     }
 
-    private void updateBadge(int count) {
+
+    /*private void updateBadge(int count) {
         if (requestsBadge == null) return;
         if (count > 0) {
             requestsBadge.setVisibility(View.VISIBLE);
@@ -516,9 +548,35 @@ public class MainActivity extends AppCompatActivity {
         } else {
             requestsBadge.setVisibility(View.GONE);
         }
+    }*/
+    private void updateBadge(int count) {
+        BottomNavigationView nav = findViewById(R.id.bottomNav);
+        BadgeDrawable badge = nav.getOrCreateBadge(R.id.nav_requests);
+        if (count > 0) {
+            badge.setVisible(true);
+            badge.setNumber(count);
+        } else {
+            badge.setVisible(false);
+            badge.clearNumber();
+        }
+
+        // Actualizar texto dentro del panel
+        TextView countText = findViewById(R.id.pendingCountText);
+        if (countText != null) {
+            countText.setText(count > 0
+                    ? "🎵 SOLICITUDES: " + count
+                    : "✅ Sin solicitudes pendientes");
+            /*countText.setTextColor(count > 0
+                    ? Color.parseColor("#00CC44")
+                    : Color.parseColor("#6b6b8a"));*/
+        }
     }
 
-    private void markRequestPlayed(SongRequest req) {
+
+
+
+
+    /*private void markRequestPlayed(SongRequest req) {
         api.markRequestPlayed(req.getId()).enqueue(new Callback<Void>() {
             @Override public void onResponse(Call<Void> c, Response<Void> r) {
                 if (r.isSuccessful()) {
@@ -528,7 +586,29 @@ public class MainActivity extends AppCompatActivity {
             }
             @Override public void onFailure(Call<Void> c, Throwable t) { toast("Error"); }
         });
+    }*/
+    /*private void markRequestPlayed(SongRequest req) {
+        api.markRequestPlayed(req.getId()).enqueue(new Callback<Void>() {
+            @Override public void onResponse(Call<Void> c, Response<Void> r) {
+                if (r.isSuccessful()) {
+                    toast("✅ Marcada como reproducida");
+                    // NO llamar loadRequests() aquí — el adapter ya actualizó la UI
+                }
+            }
+            @Override public void onFailure(Call<Void> c, Throwable t) { toast("Error"); }
+        });
+    }*/
+    private void markRequestPlayed(SongRequest req) {
+        // Solo notifica al servidor en background, no recarga la lista
+        api.markRequestPlayed(req.getId()).enqueue(new Callback<Void>() {
+            @Override public void onResponse(Call<Void> c, Response<Void> r) {}
+            @Override public void onFailure(Call<Void> c, Throwable t) {}
+        });
     }
+
+
+
+
 
     private void deleteRequest(SongRequest req) {
         api.deleteRequest(req.getId()).enqueue(new Callback<Void>() {

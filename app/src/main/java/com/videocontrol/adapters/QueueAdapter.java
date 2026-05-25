@@ -100,7 +100,7 @@ import java.util.List;
 public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.QueueViewHolder> {
 
     /** Número máximo de items que se muestran en la lista (incluye el que suena). */
-    private static final int MAX_VISIBLE = 20;
+    private static final int MAX_VISIBLE = 50;
 
     private List<QueueItem> queue = new ArrayList<>();
     private final OnQueueListener listener;

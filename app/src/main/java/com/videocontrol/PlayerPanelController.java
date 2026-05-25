@@ -511,6 +511,8 @@ package com.videocontrol;
 //   ▸ Contador de cola
 // ─────────────────────────────────────────────────────────────────────────────
 
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.view.View;
 import android.widget.*;
 import androidx.annotation.NonNull;
@@ -586,6 +588,11 @@ public class PlayerPanelController {
         btnRepeat        = root.findViewById(R.id.btnRepeat);
         btnRandom        = root.findViewById(R.id.btnRandom);
         btnLoop          = root.findViewById(R.id.btnLoop);
+
+        ToggleButton btnRepeat = root.findViewById(R.id.btnRepeat);
+        ToggleButton btnRandom = root.findViewById(R.id.btnRandom);
+        ToggleButton btnLoop   = root.findViewById(R.id.btnLoop);
+
 
         setupListeners(root);
     }
@@ -695,6 +702,36 @@ public class PlayerPanelController {
                 api.toggleRandom().enqueue(simpleCallback("Error random")));
         btnLoop.setOnClickListener(v ->
                 api.toggleLoop().enqueue(simpleCallback("Error loop")));
+
+        btnRepeat.setOnCheckedChangeListener((btn, isChecked) -> {
+            btn.setBackgroundTintList(ColorStateList.valueOf(
+                    isChecked ? Color.parseColor("#00CC44") : Color.parseColor("#1a1a2a")));
+            btn.setTextColor(isChecked ? Color.WHITE : Color.parseColor("#0099FF"));
+            api.toggleRepeat().enqueue(new Callback<Void>() {
+                @Override public void onResponse(Call<Void> c, Response<Void> r) {}
+                @Override public void onFailure(Call<Void> c, Throwable t) {}
+            });
+        });
+
+        btnRandom.setOnCheckedChangeListener((btn, isChecked) -> {
+            btn.setBackgroundTintList(ColorStateList.valueOf(
+                    isChecked ? Color.parseColor("#00CC44") : Color.parseColor("#1a1a2a")));
+            btn.setTextColor(isChecked ? Color.WHITE : Color.parseColor("#0099FF"));
+            api.toggleRandom().enqueue(new Callback<Void>() {
+                @Override public void onResponse(Call<Void> c, Response<Void> r) {}
+                @Override public void onFailure(Call<Void> c, Throwable t) {}
+            });
+        });
+
+        btnLoop.setOnCheckedChangeListener((btn, isChecked) -> {
+            btn.setBackgroundTintList(ColorStateList.valueOf(
+                    isChecked ? Color.parseColor("#00CC44") : Color.parseColor("#1a1a2a")));
+            btn.setTextColor(isChecked ? Color.WHITE : Color.parseColor("#0099FF"));
+            api.toggleLoop().enqueue(new Callback<Void>() {
+                @Override public void onResponse(Call<Void> c, Response<Void> r) {}
+                @Override public void onFailure(Call<Void> c, Throwable t) {}
+            });
+        });
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
@@ -720,6 +757,13 @@ public class PlayerPanelController {
             }
         };
     }
+
+
+
+
+
+
+
 
 }
 

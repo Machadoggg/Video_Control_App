@@ -82,22 +82,26 @@
                 android:textSize="12sp"/>
 
             <TextView
-                android:id="@+id/timeRemaining"
-                android:layout_width="wrap_content"
+                android:id="@+id/timeTotal"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="00:00"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="@color/accent_blue"
+                android:gravity="center"/>
+
+            <TextView
+                android:id="@+id/timeRemaining"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:text="-00:00"
                 android:textColor="#AAAAAA"
                 android:textSize="12sp"
-                android:layout_marginEnd="8dp"/>
+                android:gravity="end"/>
 
-            <TextView
-                android:id="@+id/timeTotal"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="00:00"
-                android:textColor="@android:color/white"
-                android:textSize="12sp"
-                android:textStyle="bold"/>
         </LinearLayout>
 
         <!-- ══ CONTROLES PRINCIPALES ════════════════════════════════════ -->
@@ -133,8 +137,9 @@
                 android:id="@+id/btnPlayPause"
                 android:layout_width="64dp"
                 android:layout_height="64dp"
+                android:backgroundTint="@color/accent_blue"
+                android:textColor="@color/white"
                 android:src="@android:drawable/ic_media_play"
-                android:tint="@android:color/white"
                 android:layout_marginHorizontal="12dp"
                 android:contentDescription="Play/Pausa"/>
 
@@ -396,9 +401,12 @@
                     android:layout_width="0dp"
                     android:layout_height="50dp"
                     android:layout_weight="1"
+                    android:backgroundTint="@color/card_dark"
+                    android:textColor="@color/accent_blue"
                     android:textOn="🔂 Repetir"
                     android:textOff="🔂 Repetir"
-                    android:textSize="10sp"
+                    android:textSize="11sp"
+                    android:checked="false"
                     android:layout_marginEnd="6dp"/>
 
                 <ToggleButton
@@ -406,9 +414,12 @@
                     android:layout_width="0dp"
                     android:layout_height="50dp"
                     android:layout_weight="1"
+                    android:backgroundTint="@color/card_dark"
+                    android:textColor="@color/accent_blue"
                     android:textOn="🔀 Aleatorio"
                     android:textOff="🔀 Aleatorio"
-                    android:textSize="10sp"
+                    android:textSize="11sp"
+                    android:checked="false"
                     android:layout_marginEnd="6dp"/>
 
                 <ToggleButton
@@ -416,9 +427,12 @@
                     android:layout_width="0dp"
                     android:layout_height="50dp"
                     android:layout_weight="1"
+                    android:backgroundTint="@color/card_dark"
+                    android:textColor="@color/accent_blue"
                     android:textOn="🔁 Bucle"
                     android:textOff="🔁 Bucle"
-                    android:textSize="10sp"/>
+                    android:textSize="11sp"
+                    android:checked="false"/>
 
             </LinearLayout>
         </androidx.cardview.widget.CardView>

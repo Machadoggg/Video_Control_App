@@ -390,6 +390,9 @@ public interface ApiService {
     @DELETE("api/SongRequest/{id}")
     Call<Void> deleteRequest(@Path("id") int id);
 
+    @GET("api/SongRequest/all")
+    Call<List<SongRequest>> getAllRequests();
+
     // ── DTOs ──────────────────────────────────────────────────────────────────
     class AddToQueueDto {
         public int    videoId;
