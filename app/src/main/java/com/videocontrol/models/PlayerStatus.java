@@ -62,6 +62,9 @@ public class PlayerStatus {
     // Video y cola
     @SerializedName("currentVideo") public Video  currentVideo;
     @SerializedName("queueCount")   public int    queueCount;
+
+    @SerializedName("title")
+    public String title;
 }
 
 

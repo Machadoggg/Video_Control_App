@@ -1,5 +1,6 @@
 package com.videocontrol;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
@@ -116,6 +117,9 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         handler.post(statusPoll);
         badgeHandler.post(badgePoll);
+        loadQueue();
+        refreshStatus();
+        refreshRequestsBadge();
     }
 
     @Override
@@ -394,7 +398,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void clearQueue() {
+    /*private void clearQueue() {
         api.clearQueue().enqueue(new Callback<Void>() {
             @Override public void onResponse(Call<Void> c, Response<Void> r) {
                 if (r.isSuccessful()) {
@@ -406,12 +410,32 @@ public class MainActivity extends AppCompatActivity {
             }
             @Override public void onFailure(Call<Void> c, Throwable t) { toast("Error"); }
         });
+    }*/
+    private void clearQueue() {
+        api.clearQueue().enqueue(new Callback<Void>() {
+            @Override public void onResponse(Call<Void> c, Response<Void> r) {
+                if (r.isSuccessful()) {
+                    autoPlayEnabled  = false;
+                    awaitingNextPlay = false;
+                    PlayerService.autoPlayEnabled = false;
+                    stopService(new Intent(MainActivity.this, PlayerService.class));
+                    toast("🗑️ Lista limpia");
+                    loadQueue();
+                }
+            }
+            @Override public void onFailure(Call<Void> c, Throwable t) { toast("Error"); }
+        });
     }
+
+
+
 
     // ── Reproducción continua ──────────────────────────────────────────────────
     private void startAutoPlay() {
         autoPlayEnabled  = true;
         awaitingNextPlay = false;
+        PlayerService.autoPlayEnabled = true;
+        startPlayerService(true);      // ← inicia el servicio segundo plano
         toast("▶ Iniciando reproducción continua…");
         playNext();
     }
@@ -442,7 +466,8 @@ public class MainActivity extends AppCompatActivity {
         List<Integer> ids = new ArrayList<>();
         for (Video v : allAvailableVideos) ids.add(v.getId());
         ApiService.ShuffleDto dto = new ApiService.ShuffleDto(ids, "Android");
-        api.shuffleAndFill(dto).enqueue(new Callback<Void>() {
+
+        /*api.shuffleAndFill(dto).enqueue(new Callback<Void>() {
             @Override public void onResponse(Call<Void> c, Response<Void> r) {
                 if (r.isSuccessful()) {
                     toast("🔀 Cola aleatoria lista");
@@ -457,7 +482,22 @@ public class MainActivity extends AppCompatActivity {
             @Override public void onFailure(Call<Void> c, Throwable t) {
                 toast("Sin conexión con el servidor");
             }
+        });*/
+        api.shuffleAndFill(dto).enqueue(new Callback<Void>() {
+            @Override public void onResponse(Call<Void> c, Response<Void> r) {
+                if (r.isSuccessful()) {
+                    autoPlayEnabled = true;
+                    PlayerService.autoPlayEnabled = true;
+                    startPlayerService(true);   // ← inicia el servicio
+                    loadQueue();
+                    if (!isPlaying) playNext();
+                }
+            }
+            @Override public void onFailure(Call<Void> c, Throwable t) {}
         });
+
+
+
     }
 
     private void playNext() {
@@ -641,6 +681,12 @@ public class MainActivity extends AppCompatActivity {
             }
             @Override public void onFailure(Call<PlayerStatus> c, Throwable t) {}
         });
+    }
+
+    private void startPlayerService(boolean autoPlay) {
+        Intent intent = new Intent(this, PlayerService.class);
+        intent.putExtra("autoPlay", autoPlay);
+        startForegroundService(intent);
     }
 
     private void toast(String msg) { Toast.makeText(this, msg, Toast.LENGTH_SHORT).show(); }
