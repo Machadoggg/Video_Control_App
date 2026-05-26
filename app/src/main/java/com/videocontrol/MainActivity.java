@@ -186,8 +186,11 @@ public class MainActivity extends AppCompatActivity {
         Button playQueueBtn = findViewById(R.id.playQueueButton);
         playQueueBtn.setOnClickListener(v -> startAutoPlay());
 
+        /*Button shuffleBtn = findViewById(R.id.shuffleButton);
+        shuffleBtn.setOnClickListener(v -> shuffleAndPlay());*/
+
         Button shuffleBtn = findViewById(R.id.shuffleButton);
-        shuffleBtn.setOnClickListener(v -> shuffleAndPlay());
+        shuffleBtn.setOnClickListener(v -> showShuffleByCategoryDialog());
 
         Button playNextBtn = findViewById(R.id.playNextButton);
         playNextBtn.setOnClickListener(v -> playNext());
@@ -688,6 +691,228 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra("autoPlay", autoPlay);
         startForegroundService(intent);
     }
+
+
+    /*private void showShuffleByCategoryDialog() {
+        // Usar las categorías ya cargadas en el spinner
+        List<String> cats = new ArrayList<>();
+        cats.add("Todos los géneros");
+        for (int i = 1; i < categoryAdapter.getCount(); i++) {
+            cats.add(categoryAdapter.getItem(i));
+        }
+
+        String[] options = cats.toArray(new String[0]);
+
+        new android.app.AlertDialog.Builder(this)
+                .setTitle("🔀 Reproducción aleatoria")
+                .setItems(options, (dialog, which) -> {
+                    String selected = options[which];
+                    String category = selected.equals("Todos los géneros") ? null : selected;
+                    doShuffleByCategory(selected, category);
+                })
+                .setNegativeButton("Cancelar", null)
+                .show();
+    }*/
+    private void showShuffleByCategoryDialog() {
+        List<String> cats = new ArrayList<>();
+        cats.add("🎵  Todos los géneros");
+        for (int i = 1; i < categoryAdapter.getCount(); i++) {
+            cats.add("🎵  " + categoryAdapter.getItem(i));
+        }
+
+        com.google.android.material.bottomsheet.BottomSheetDialog sheet =
+                new com.google.android.material.bottomsheet.BottomSheetDialog(this);
+
+        // Contenedor principal
+        android.widget.LinearLayout container = new android.widget.LinearLayout(this);
+        container.setOrientation(android.widget.LinearLayout.VERTICAL);
+        container.setBackgroundColor(android.graphics.Color.parseColor("#0d0d14"));
+        container.setPadding(0, 20, 0, 48);
+
+        // Handle decorativo
+        android.view.View handle = new android.view.View(this);
+        android.widget.LinearLayout.LayoutParams handleParams =
+                new android.widget.LinearLayout.LayoutParams(80, 5);
+        handleParams.gravity = android.view.Gravity.CENTER_HORIZONTAL;
+        handleParams.bottomMargin = 20;
+        handle.setLayoutParams(handleParams);
+        handle.setBackgroundColor(android.graphics.Color.parseColor("#2a2a45"));
+        handle.getBackground().mutate();
+        android.graphics.drawable.GradientDrawable handleBg =
+                new android.graphics.drawable.GradientDrawable();
+        handleBg.setColor(android.graphics.Color.parseColor("#2a2a45"));
+        handleBg.setCornerRadius(10f);
+        handle.setBackground(handleBg);
+        container.addView(handle, handleParams);
+
+        // Título
+        /*android.widget.TextView title = new android.widget.TextView(this);
+        title.setText("🔀  Reproducción aleatoria");
+        title.setTextSize(14);
+        title.setTextColor(android.graphics.Color.parseColor("#0099FF"));
+        title.setTypeface(null, android.graphics.Typeface.BOLD);
+        title.setLetterSpacing(0.08f);
+        title.setPadding(48, 8, 48, 16);
+        container.addView(title);*/
+        // Fila título + botón cerrar
+        android.widget.LinearLayout titleRow = new android.widget.LinearLayout(this);
+        titleRow.setOrientation(android.widget.LinearLayout.HORIZONTAL);
+        titleRow.setGravity(android.view.Gravity.CENTER_VERTICAL);
+        titleRow.setPadding(48, 8, 24, 16);
+
+        android.widget.TextView title = new android.widget.TextView(this);
+        title.setText("🔀  Lista aleatoria por género");
+        title.setTextSize(16);
+        title.setTextColor(android.graphics.Color.parseColor("#0099FF"));
+        title.setTypeface(null, android.graphics.Typeface.BOLD);
+        title.setLetterSpacing(0.08f);
+        title.setLayoutParams(new android.widget.LinearLayout.LayoutParams(
+                0, android.view.ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+
+        android.widget.ImageButton closeBtn = new android.widget.ImageButton(this);
+        closeBtn.setImageResource(android.R.drawable.ic_menu_close_clear_cancel);
+        closeBtn.setBackgroundColor(android.graphics.Color.TRANSPARENT);
+        closeBtn.setColorFilter(android.graphics.Color.parseColor("#6b6b8a"));
+        android.widget.LinearLayout.LayoutParams closeParams =
+                new android.widget.LinearLayout.LayoutParams(80, 80);
+        closeBtn.setLayoutParams(closeParams);
+        closeBtn.setOnClickListener(v -> sheet.dismiss());
+
+        titleRow.addView(title);
+        titleRow.addView(closeBtn);
+        container.addView(titleRow);
+
+
+
+        // Divisor bajo el título
+        android.view.View topDivider = new android.view.View(this);
+        android.widget.LinearLayout.LayoutParams divParams =
+                new android.widget.LinearLayout.LayoutParams(
+                        android.view.ViewGroup.LayoutParams.MATCH_PARENT, 1);
+        topDivider.setLayoutParams(divParams);
+        topDivider.setBackgroundColor(android.graphics.Color.parseColor("#2a2a45"));
+        container.addView(topDivider);
+
+        // ScrollView con items
+        android.widget.ScrollView scroll = new android.widget.ScrollView(this);
+        scroll.setBackgroundColor(android.graphics.Color.parseColor("#0d0d14"));
+        android.widget.LinearLayout list = new android.widget.LinearLayout(this);
+        list.setOrientation(android.widget.LinearLayout.VERTICAL);
+        list.setBackgroundColor(android.graphics.Color.parseColor("#0d0d14"));
+
+        for (int i = 0; i < cats.size(); i++) {
+            String cat = cats.get(i);
+
+            android.widget.LinearLayout row = new android.widget.LinearLayout(this);
+            row.setOrientation(android.widget.LinearLayout.HORIZONTAL);
+            row.setGravity(android.view.Gravity.CENTER_VERTICAL);
+            row.setPadding(48, 28, 48, 28);
+            row.setBackgroundColor(android.graphics.Color.parseColor("#0d0d14"));
+
+            // Ripple
+            android.graphics.drawable.GradientDrawable rowBg =
+                    new android.graphics.drawable.GradientDrawable();
+            rowBg.setColor(android.graphics.Color.TRANSPARENT);
+            android.graphics.drawable.RippleDrawable ripple =
+                    new android.graphics.drawable.RippleDrawable(
+                            android.content.res.ColorStateList.valueOf(
+                                    android.graphics.Color.parseColor("#1a2a3a")),
+                            rowBg, null);
+            row.setBackground(ripple);
+            row.setClickable(true);
+            row.setFocusable(true);
+
+            android.widget.TextView itemText = new android.widget.TextView(this);
+            itemText.setText(cat);
+            itemText.setTextSize(14);
+            // "Todos los géneros" en azul, el resto en blanco
+            itemText.setTextColor(i == 0
+                    ? android.graphics.Color.parseColor("#0099FF")
+                    : android.graphics.Color.parseColor("#f0f0ff"));
+            itemText.setLayoutParams(new android.widget.LinearLayout.LayoutParams(
+                    0, android.view.ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+            row.addView(itemText);
+
+            // Flecha →
+            android.widget.TextView arrow = new android.widget.TextView(this);
+            arrow.setText("›");
+            arrow.setTextSize(18);
+            arrow.setTextColor(android.graphics.Color.parseColor("#2a2a45"));
+            row.addView(arrow);
+
+            final String selected = cat.replace("📁  ", "").replace("🎵  ", "");
+            final String category = selected.equals("Todos los géneros") ? null : selected;
+
+            row.setOnClickListener(v -> {
+                sheet.dismiss();
+                doShuffleByCategory(selected, category);
+            });
+
+            list.addView(row);
+
+            // Divisor entre items
+            android.view.View div = new android.view.View(this);
+            android.widget.LinearLayout.LayoutParams dp =
+                    new android.widget.LinearLayout.LayoutParams(
+                            android.view.ViewGroup.LayoutParams.MATCH_PARENT, 1);
+            dp.setMarginStart(48);
+            div.setLayoutParams(dp);
+            div.setBackgroundColor(android.graphics.Color.parseColor("#1a1a2a"));
+            list.addView(div);
+        }
+
+        scroll.addView(list);
+        container.addView(scroll);
+
+        sheet.setContentView(container);
+
+        sheet.setOnShowListener(d -> {
+            android.view.View bottomSheet = sheet.getWindow()
+                    .findViewById(com.google.android.material.R.id.design_bottom_sheet);
+            if (bottomSheet != null) {
+                bottomSheet.setBackgroundColor(
+                        android.graphics.Color.parseColor("#0d0d14"));
+                com.google.android.material.bottomsheet.BottomSheetBehavior behavior =
+                        com.google.android.material.bottomsheet.BottomSheetBehavior
+                                .from(bottomSheet);
+                behavior.setState(
+                        com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED);
+                behavior.setSkipCollapsed(true);
+                behavior.setDraggable(false);  // ← evita cierre por deslizamiento
+            }
+        });
+
+        sheet.show();
+    }
+
+
+
+
+
+    private void doShuffleByCategory(String label, String category) {
+        ApiService.ShuffleByCategoryDto dto =
+                new ApiService.ShuffleByCategoryDto(category, "Android");
+
+        api.shuffleByCategory(dto).enqueue(new Callback<Void>() {
+            @Override public void onResponse(Call<Void> c, Response<Void> r) {
+                if (r.isSuccessful()) {
+                    toast("🔀 " + label);
+                    autoPlayEnabled  = true;
+                    awaitingNextPlay = false;
+                    PlayerService.autoPlayEnabled = true;
+                    startPlayerService(true);
+                    loadQueue();
+                    if (!isPlaying) playNext();
+                } else {
+                    toast("Sin videos en esta categoría");
+                }
+            }
+            @Override public void onFailure(Call<Void> c, Throwable t) {
+                toast("Sin conexión");
+            }
+        });
+    }
+
 
     private void toast(String msg) { Toast.makeText(this, msg, Toast.LENGTH_SHORT).show(); }
 }

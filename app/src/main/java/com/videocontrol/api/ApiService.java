@@ -393,6 +393,18 @@ public interface ApiService {
     @GET("api/SongRequest/all")
     Call<List<SongRequest>> getAllRequests();
 
+    @POST("api/Queue/shuffle-by-category")
+    Call<Void> shuffleByCategory(@Body ShuffleByCategoryDto dto);
+
+    class ShuffleByCategoryDto {
+        public String category;
+        public String requestedBy;
+        public ShuffleByCategoryDto(String category, String requestedBy) {
+            this.category    = category;
+            this.requestedBy = requestedBy;
+        }
+    }
+
     // ── DTOs ──────────────────────────────────────────────────────────────────
     class AddToQueueDto {
         public int    videoId;
