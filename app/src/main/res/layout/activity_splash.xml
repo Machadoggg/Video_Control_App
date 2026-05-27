@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0a0a0a">
+
+    <!-- Fondo de textura: grid de rectángulos oscuros simulando fotos B&W -->
+    <GridLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:columnCount="4"
+        android:rowCount="7"
+        android:alpha="0.35">
+
+        <View android:layout_width="0dp" android:layout_height="0dp"
+            android:layout_columnWeight="1" android:layout_rowWeight="1"
+            android:background="#1a1a1a"/>
+        <View android:layout_width="0dp" android:layout_height="0dp"
+            android:layout_columnWeight="1" android:layout_rowWeight="1"
+            android:background="#2a2a2a"/>
+        <View android:layout_width="0dp" android:layout_height="0dp"
+            android:layout_columnWeight="1" android:layout_rowWeight="1"
+            android:background="#111111"/>
+        <View android:layout_width="0dp" android:layout_height="0dp"
+            android:layout_columnWeight="1" android:layout_rowWeight="1"
+            android:background="#222222"/>
+        <View android:layout_width="0dp" android:layout_height="0dp"
+            android:layout_columnWeight="1" android:layout_rowWeight="1"
+            android:background="#252525"/>
+        <View android:layout_width="0dp" android:layout_height="0dp"
+            android:layout_columnWeight="1" android:layout_rowWeight="1"
+            android:background="#151515"/>
+        <View android:layout_width="0dp" android:layout_height="0dp"
+            android:layout_columnWeight="1" android:layout_rowWeight="1"
+            android:background="#2a2a2a"/>
+        <View android:layout_width="0dp" android:layout_height="0dp"
+            android:layout_columnWeight="1" android:layout_rowWeight="1"
+            android:background="#1a1a1a"/>
+        <View android:layout_width="0dp" android:layout_height="0dp"
+            android:layout_columnWeight="1" android:layout_rowWeight="1"
+            android:background="#111111"/>
+        <View android:layout_width="0dp" android:layout_height="0dp"
+            android:layout_columnWeight="1" android:layout_rowWeight="1"
+            android:background="#222222"/>
+        <View android:layout_width="0dp" android:layout_height="0dp"
+            android:layout_columnWeight="1" android:layout_rowWeight="1"
+            android:background="#1a1a1a"/>
+        <View android:layout_width="0dp" android:layout_height="0dp"
+            android:layout_columnWeight="1" android:layout_rowWeight="1"
+            android:background="#2a2a2a"/>
+        <View android:layout_width="0dp" android:layout_height="0dp"
+            android:layout_columnWeight="1" android:layout_rowWeight="1"
+            android:background="#2a2a2a"/>
+        <View android:layout_width="0dp" android:layout_height="0dp"
+            android:layout_columnWeight="1" android:layout_rowWeight="1"
+            android:background="#111111"/>
+        <View android:layout_width="0dp" android:layout_height="0dp"
+            android:layout_columnWeight="1" android:layout_rowWeight="1"
+            android:background="#252525"/>
+        <View android:layout_width="0dp" android:layout_height="0dp"
+            android:layout_columnWeight="1" android:layout_rowWeight="1"
+            android:background="#151515"/>
+        <View android:layout_width="0dp" android:layout_height="0dp"
+            android:layout_columnWeight="1" android:layout_rowWeight="1"
+            android:background="#1a1a1a"/>
+        <View android:layout_width="0dp" android:layout_height="0dp"
+            android:layout_columnWeight="1" android:layout_rowWeight="1"
+            android:background="#222222"/>
+        <View android:layout_width="0dp" android:layout_height="0dp"
+            android:layout_columnWeight="1" android:layout_rowWeight="1"
+            android:background="#2a2a2a"/>
+        <View android:layout_width="0dp" android:layout_height="0dp"
+            android:layout_columnWeight="1" android:layout_rowWeight="1"
+            android:background="#111111"/>
+        <View android:layout_width="0dp" android:layout_height="0dp"
+            android:layout_columnWeight="1" android:layout_rowWeight="1"
+            android:background="#151515"/>
+        <View android:layout_width="0dp" android:layout_height="0dp"
+            android:layout_columnWeight="1" android:layout_rowWeight="1"
+            android:background="#252525"/>
+        <View android:layout_width="0dp" android:layout_height="0dp"
+            android:layout_columnWeight="1" android:layout_rowWeight="1"
+            android:background="#1a1a1a"/>
+        <View android:layout_width="0dp" android:layout_height="0dp"
+            android:layout_columnWeight="1" android:layout_rowWeight="1"
+            android:background="#2a2a2a"/>
+        <View android:layout_width="0dp" android:layout_height="0dp"
+            android:layout_columnWeight="1" android:layout_rowWeight="1"
+            android:background="#222222"/>
+        <View android:layout_width="0dp" android:layout_height="0dp"
+            android:layout_columnWeight="1" android:layout_rowWeight="1"
+            android:background="#111111"/>
+        <View android:layout_width="0dp" android:layout_height="0dp"
+            android:layout_columnWeight="1" android:layout_rowWeight="1"
+            android:background="#1a1a1a"/>
+        <View android:layout_width="0dp" android:layout_height="0dp"
+            android:layout_columnWeight="1" android:layout_rowWeight="1"
+            android:background="#252525"/>
+    </GridLayout>
+
+    <!-- Overlay oscuro central -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#88000000"/>
+
+    <!-- Contenido centrado -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="40dp">
+
+        <!-- Círculo negro con logo -->
+        <FrameLayout
+            android:layout_width="220dp"
+            android:layout_height="220dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="32dp">
+
+            <!-- Círculo exterior rojo -->
+            <View
+                android:layout_width="220dp"
+                android:layout_height="220dp"
+                android:background="@drawable/circle_red_border"/>
+
+            <!-- Círculo negro interior -->
+            <View
+                android:layout_width="210dp"
+                android:layout_height="210dp"
+                android:layout_gravity="center"
+                android:background="@drawable/circle_black"/>
+
+            <!-- Logo image (usar el logo del bar) -->
+            <ImageView
+                android:id="@+id/splashLogo"
+                android:layout_width="230dp"
+                android:layout_height="230dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_launcher_round"
+                android:scaleType="centerCrop"/>
+
+        </FrameLayout>
+
+        <!-- Subtítulo -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="VÍDEO CONTROL"
+            android:textColor="#888888"
+            android:textSize="14sp"
+            android:letterSpacing="0.2"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="60dp"/>
+
+        <!-- Indicador de carga -->
+        <ProgressBar
+            android:id="@+id/splashProgress"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="160dp"
+            android:layout_height="20dp"
+            android:layout_gravity="center_horizontal"
+            android:indeterminate="true"
+            android:indeterminateTint="@color/accent_blue"
+            android:progressTint="@color/accent_blue"/>
+
+        <!-- Nota de pie -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="rock · metal · clásicos"
+            android:textColor="#888888"
+            android:textSize="14sp"
+            android:letterSpacing="0.1"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="24dp"/>
+
+
+        <!-- Decoración inferior -->
+
+        <!-- Versión -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="v1.0.0"
+            android:textColor="#444444"
+            android:textSize="11sp"
+            android:letterSpacing="0.1"
+            android:layout_marginTop="60dp"/>
+
+        <!-- Desarrollador -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Developed by DharmaCode"
+            android:textColor="#555555"
+            android:textSize="11sp"
+            android:letterSpacing="0.05"
+            android:layout_marginBottom="4dp"/>
+
+        <!-- Derechos reservados -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="© 2026 DharmaCode · All rights reserved"
+            android:textColor="#333333"
+            android:textSize="10sp"
+            android:letterSpacing="0.03"
+            android:gravity="center"
+            android:layout_marginBottom="24dp"/>
+
+    </LinearLayout>
+
+</FrameLayout>

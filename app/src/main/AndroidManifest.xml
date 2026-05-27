@@ -9,13 +9,15 @@
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
-        android:label="Video Control"
+        android:label="Barracuda"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.VideoControl"
         android:usesCleartextTraffic="true">
 
-        <activity
+
+
+        <!--<activity
             android:name=".MainActivity"
             android:exported="true"
             android:screenOrientation="portrait">
@@ -23,7 +25,36 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>-->
+
+
+        <!-- MainActivity ya NO debe tener el intent-filter MAIN/LAUNCHER -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="false"/>
+
+
+
+
+
+        <!-- SplashActivity como launcher principal -->
+        <activity
+            android:name=".SplashActivity"
+            android:exported="true"
+            android:theme="@style/Theme.VideoControl">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
         </activity>
+
+        <activity
+            android:name=".LoginActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat.NoActionBar"/>
+
+
+
 
         <service
             android:name=".PlayerService"

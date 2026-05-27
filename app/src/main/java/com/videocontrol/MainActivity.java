@@ -136,6 +136,21 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle("🎬 Video Control");
+
+        // Botón logout
+        Button logoutBtn = new Button(this);
+        logoutBtn.setText("Salir \uD83D\uDCF4");
+        logoutBtn.setTextSize(16);
+        logoutBtn.setTextColor(android.graphics.Color.WHITE);
+        logoutBtn.setBackgroundColor(android.graphics.Color.TRANSPARENT);
+        logoutBtn.setPadding(16, 0, 16, 0);
+        logoutBtn.setOnClickListener(v -> logout());
+
+        Toolbar.LayoutParams params = new Toolbar.LayoutParams(
+                Toolbar.LayoutParams.WRAP_CONTENT,
+                Toolbar.LayoutParams.WRAP_CONTENT,
+                android.view.Gravity.END);
+        toolbar.addView(logoutBtn, params);
     }
 
     // ── Panel Videos ──────────────────────────────────────────────────────────
@@ -911,6 +926,36 @@ public class MainActivity extends AppCompatActivity {
                 toast("Sin conexión");
             }
         });
+    }
+
+    private void logout() {
+        new android.app.AlertDialog.Builder(this)
+                .setTitle("Cerrar sesión")
+                .setMessage("¿Salir de la aplicación?")
+                .setPositiveButton("Salir", (dialog, which) -> {
+
+                    // 1. Borrar sesión PRIMERO con commit() (síncrono, no async)
+                    getSharedPreferences("barracuda_prefs", MODE_PRIVATE)
+                            .edit()
+                            .clear()
+                            .commit();  // ← commit() en lugar de apply() — espera a que escriba
+
+                    // 2. Detener servicio
+                    stopService(new Intent(this, PlayerService.class));
+
+                    // 3. Cancelar handlers
+                    handler.removeCallbacksAndMessages(null);
+                    badgeHandler.removeCallbacksAndMessages(null);
+                    requestsHandler.removeCallbacksAndMessages(null);
+
+                    // 4. Ir al Login en lugar de matar el proceso
+                    Intent intent = new Intent(this, LoginActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    finish();
+                })
+                .setNegativeButton("Cancelar", null)
+                .show();
     }
 
 

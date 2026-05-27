@@ -6,5 +6,8 @@
         <item name="colorOnPrimary">@color/white</item>
         <item name="android:windowBackground">@color/bg_dark</item>
         <item name="android:statusBarColor">@color/bg_dark</item>
+
+        <item name="android:windowDisablePreview">true</item>
+        <item name="android:navigationBarColor">#0a0a0a</item>
     </style>
 </resources>
